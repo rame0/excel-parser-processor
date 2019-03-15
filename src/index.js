@@ -4,6 +4,10 @@ import url from 'url';
 import { showOpenDialog } from './dialogs';
 import { processFile } from "./utils/processItems";
 
+import * as Sentry from '@sentry/electron';
+
+Sentry.init({dsn: 'https://80ff89d351dc4f15b106bfa127c66da1@sentry.io/1362252'});
+
 let win;
 
 const createWindow = () => {

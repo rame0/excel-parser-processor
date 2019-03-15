@@ -1,6 +1,10 @@
 import { ipcRenderer } from 'electron';
 import $ from 'jquery';
 
+import * as Sentry from '@sentry/electron';
+
+Sentry.init({dsn: 'https://80ff89d351dc4f15b106bfa127c66da1@sentry.io/1362252'});
+
 // we also need to process some styles with webpack
 import fontawesome from '@fortawesome/fontawesome';
 import { faCloudUploadAlt, faExclamationCircle, faCheckCircle } from '@fortawesome/fontawesome-free-solid';
