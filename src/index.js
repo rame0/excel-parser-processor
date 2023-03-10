@@ -1,8 +1,8 @@
 import path from 'path';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import {app, BrowserWindow, ipcMain} from 'electron';
 import url from 'url';
-import { showOpenDialog } from './dialogs';
-import { processFile } from "./utils/processItems";
+import {showOpenDialog} from './dialogs';
+import {processFile} from "./utils/processItems";
 
 let win;
 
@@ -32,7 +32,7 @@ const createWindow = () => {
   });
 
   // Open the DevTools during development.
-  if(process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development') {
     win.webContents.openDevTools();
   }
 
@@ -43,8 +43,8 @@ const createWindow = () => {
 };
 
 app.on('ready', () => {
-  ipcMain.on('file-dropped', (event, filePath) => {
-    showOpenDialog(win, filePath, processFile);
+  ipcMain.on('start-processing', (event, filesPaths) => {
+    showOpenDialog(win, filesPaths, processFile);
   });
 
   createWindow();

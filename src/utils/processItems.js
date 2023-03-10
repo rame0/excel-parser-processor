@@ -1,14 +1,16 @@
 import path from 'path';
-import { createWriteStream, mkdir } from 'fs';
-import { pipeline } from 'stream';
-import { promisify } from 'util';
+import {createWriteStream, mkdir} from 'fs';
+import {pipeline} from 'stream';
+import {promisify} from 'util';
 import fetch from 'electron-fetch';
-import { URL } from 'url';
-import xlsx from 'node-xlsx';
+import {URL} from 'url';
+// import xlsx from 'node-xlsx';
+import xlsx from 'xlsx';
 import isUrl from 'is-url';
 import mime from 'mime-types';
 
 import generateFileName from './generateFileName';
+
 const streamPipeline = promisify(pipeline);
 
 let initialItemsLength;
@@ -25,7 +27,7 @@ const _resetProcessData = () => {
 
 const processItem = async (item, outputPath) => {
 
-  const [ itemUrl, newName, subFolderName ] = item;
+  const [itemUrl, newName, subFolderName] = item;
   const url = new URL(itemUrl);
   const itemName = newName ? `${newName}${path.extname(url.pathname)}` : path.basename(url.pathname);
 
@@ -37,7 +39,8 @@ const processItem = async (item, outputPath) => {
 
   if (response.ok) {
     if (subFolderName) {
-      await mkdir(`${outputPath}/${subFolderName}`, { recursive: true }, () => {});
+      await mkdir(`${outputPath}/${subFolderName}`, {recursive: true}, () => {
+      });
     }
 
     const contentType = response.headers.get('content-type');
@@ -128,8 +131,14 @@ export const processFile = async (filePath, outputPath, browserWindow) => {
 
   _resetProcessData();
 
-  const workSheetsFromFile = xlsx.parse(filePath);
-  const dataRows = workSheetsFromFile.flatMap(page => page.data).filter(item => item.length);
+  // const wbWorkSheetsFile = xlsx.parse(filePath.wb_file);
+  const wbWorkSheetsFile = xlsx.readFile(filePath.wb_file);
+  // const srcWorkSheetsFile = xlsx.parse(filePath.src_file);
+  const srcWorkSheetsFile = xlsx.readFile(filePath.src_file);
+  // const dataRows = wbWorkSheetsFile.flatMap(page => page.data).filter(item => item.length);
+  // console.log(wbWorkSheetsFile);
+  console.log(srcWorkSheetsFile.Sheets);
+  return;
   const validRows = dataRows.filter(row => row.some(text => isUrl(text)));
 
   incompatibleItems = dataRows.filter(row => !row.some(text => isUrl(text)));

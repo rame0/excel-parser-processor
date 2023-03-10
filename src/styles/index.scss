@@ -26,13 +26,40 @@ html {
 
 .wrapper {
   width: 100%;
-  height: calc(100% -  #{$header-height});
+  //height: calc(100% -  #{$header-height});
   position: relative;
+  margin-top: 20px;
+}
+
+
+.btn {
+  margin: 10px 25%;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 5px;
+  background: #3023AE;
+  border: 1px solid darken(#3023AE, 10%);
+  cursor: pointer;
+
+  &:disabled {
+    background: darken(#3023AE, 20%);
+    border: 1px solid darken(#3023AE, 30%);
+    cursor: default;
+  }
+
+  &.btn-right {
+    margin-right: 2%;
+    float: right;
+  }
+
+  &.btn-large {
+    font-size: 150%;
+  }
 }
 
 .drop {
   width: 96%;
-  height: 96%;
+  //height: 96%;
   border: 3px dashed #DADFE3;
   border-radius: 15px;
   overflow: hidden;
@@ -40,24 +67,29 @@ html {
   background: white;
   transition: all 0.5s ease-out;
   margin: auto;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
+  //position: absolute;
+  //top: 0;
+  //left: 0;
+  //bottom: 0;
+  //right: 0;
+}
+
+.drop .file_name {
+  //display: none;
+  font-size: 200%;
 }
 
 .drop .cont {
-  width: 500px;
-  height: 170px;
+  //width: 500px;
+  //height: 170px;
   color: #8E99A5;
   transition: all 0.5s ease-out;
   margin: auto;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
+  //position: absolute;
+  //top: 0;
+  //left: 0;
+  //bottom: 0;
+  //right: 0;
 }
 
 .drop .cont i {
@@ -67,20 +99,12 @@ html {
 }
 
 .drop .cont .tit {
-  font-size: 400%;
+  font-size: 200%;
   text-transform: uppercase;
 }
 
 .drop .cont .desc {
   color: #A4AEBB;
-}
-
-.drop .cont .browse {
-  margin: 10px 25%;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 5px;
-  background: #3023AE;
 }
 
 .drop input {

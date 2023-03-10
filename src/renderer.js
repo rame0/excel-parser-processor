@@ -2,38 +2,41 @@ import $ from 'jquery';
 
 // we also need to process some styles with webpack
 import fontawesome from '@fortawesome/fontawesome';
-import { faCloudUploadAlt, faExclamationCircle, faCheckCircle } from '@fortawesome/fontawesome-free-solid';
+import {faCheckCircle, faCloudUploadAlt, faExclamationCircle} from '@fortawesome/fontawesome-free-solid';
+import './styles/index.scss';
+
 fontawesome.library.add(faCloudUploadAlt);
 fontawesome.library.add(faExclamationCircle);
 fontawesome.library.add(faCheckCircle);
-import './styles/index.scss';
 
-const drop = document.querySelector('input');
-const filesInput = document.querySelector('#files');
+const drop = document.querySelectorAll('input');
+const src_file = document.querySelector('#src_file');
+const wb_file = document.querySelector('#wb_file');
+const ready_btn = document.querySelector('#startProcessBtn');
 const errorArea = document.querySelector('.error-toast');
 const notificationArea = document.querySelector('.notification-toast');
+const files = {};
 
-const handleIn = () => {
-
-  $('.drop').css({
+const handleIn = (event) => {
+  $(event.target).parent('.drop').css({
     border: '4px dashed #3023AE',
     background: 'rgba(0, 153, 255, .05)'
   });
 
-  $('.cont').css({
+  $(event.target).siblings('.cont').css({
     color: '#3023AE'
   });
 
 };
 
-const handleOut = () => {
+const handleOut = (event) => {
 
-  $('.drop').css({
+  $(event.target).parent('.drop').css({
     border: '3px dashed #DADFE3',
     background: 'transparent'
   });
 
-  $('.cont').css({
+  $(event.target).siblings('.cont').css({
     color: '#8E99A5'
   });
 
@@ -42,31 +45,66 @@ const handleOut = () => {
 const inEvents = ['dragenter', 'dragover'];
 const outEvents = ['dragleave', 'dragend', 'mouseout', 'drop'];
 
-inEvents.forEach(event => drop.addEventListener(event, handleIn));
-outEvents.forEach(event => drop.addEventListener(event, handleOut));
+inEvents.forEach(event => drop.forEach(item => item.addEventListener(event, handleIn)));
+outEvents.forEach(event => drop.forEach(item => item.addEventListener(event, handleOut)));
 
 const handleFileSelect = event => {
-  const files = event.target.files;
+  try {
+    const file = event.target.files[0];
+    let $this = $(event.target);
 
-  for (let file of files) {
-
-    // Only process excel files.
+    // Only process excel file.
     if (!file.type.match('officedocument.*')) {
-      continue;
+      // continue;
+      window.postMessage({
+        type: 'file-error',
+        data: 'Неверный тип файла!'
+      }, '*');
+    } else {
+      // $this.siblings('.cont').css({display: 'none'});
+      $this.siblings('.file_name')
+        // .css({display: 'block'})
+        .text('Выбран файл: ' + file.path);
+
+      let fld = $this.get(0).name;
+      files[fld] = file.path
     }
 
+    let count = Object.keys(files).length
+
+    if (count > 1) {
+      window.postMessage({
+        type: 'files-ready',
+        data: files
+      }, '*');
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+  } catch {
     window.postMessage({
-      type: 'file-dropped',
-      data: file.path
+      type: 'file-error',
+      data: 'Файл не выбран!'
     }, '*');
   }
-
-  event.preventDefault();
-  event.stopPropagation();
-
 };
 
-filesInput.addEventListener('change', handleFileSelect);
+
+function filesReadyHandler () {
+  ready_btn.disabled = false;
+}
+
+function handleReadyClick(){
+  console.log('handleReadyClick');
+  window.postMessage({
+    type: 'start-processing',
+    data: files
+  }, '*');
+}
+
+src_file.addEventListener('change', handleFileSelect);
+wb_file.addEventListener('change', handleFileSelect);
+ready_btn.addEventListener('click', handleReadyClick);
 
 const $progress = $('.progress'),
   $bar = $('.progress__bar'),
@@ -88,34 +126,30 @@ const resetColors = () => {
 
 const update = (percent) => {
 
-  percent = parseFloat( percent.toFixed(1) );
+  percent = parseFloat(percent.toFixed(1));
 
-  $text.find('em').text( percent + '%' );
+  $text.find('em').text(percent + '%');
 
-  if( percent >= 100 ) {
+  if (percent >= 100) {
 
     percent = 100;
     $progress.addClass('progress--complete');
     $bar.addClass('progress__bar--blue');
-    $text.find('em').text( 'Complete' );
+    $text.find('em').text('Complete');
 
   } else {
 
-    if( percent >= green ) {
+    if (percent >= green) {
       $bar.addClass('progress__bar--green');
-    }
-
-    else if( percent >= yellow ) {
+    } else if (percent >= yellow) {
       $bar.addClass('progress__bar--yellow');
-    }
-
-    else if( percent >= orange ) {
+    } else if (percent >= orange) {
       $bar.addClass('progress__bar--orange');
     }
 
   }
 
-  $bar.css({ width: percent + '%' });
+  $bar.css({width: percent + '%'});
 
 };
 
@@ -129,7 +163,7 @@ const processStartHandler = () => {
 
 const progressHandler = percentage => update(percentage);
 
-const processCompletedHandler = ({ processedItemsCount, incompatibleItems, erroneousItems, logFilePath }) => {
+const processCompletedHandler = ({processedItemsCount, incompatibleItems, erroneousItems, logFilePath}) => {
 
   $(notificationArea).find('.text').text(
     [
@@ -186,7 +220,9 @@ const errorAreaClickHandler = () => {
 
   $(errorArea).animate({
     bottom: 0
-  }, 'slow', function() { $(this).hide().find('.text').text('')});
+  }, 'slow', function () {
+    $(this).hide().find('.text').text('')
+  });
 
 };
 
@@ -194,21 +230,24 @@ const notificationAreaClickHandler = () => {
 
   $(notificationArea).animate({
     top: 0
-  }, 'slow', function() { $(this).hide().find('.text').text('')});
+  }, 'slow', function () {
+    $(this).hide().find('.text').text('')
+  });
 
   errorAreaClickHandler();
   resetProcess();
 };
+
 
 errorArea.addEventListener('click', errorAreaClickHandler);
 
 notificationArea.addEventListener('click', notificationAreaClickHandler);
 
 const disableDrop = event => {
-  if(event.target !== filesInput) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
+  // if(event.target !== filesInput) {
+  //   event.preventDefault();
+  //   event.stopPropagation();
+  // }
 };
 
 // Prevent loading a drag-and-dropped file
@@ -218,9 +257,12 @@ const disableDrop = event => {
 
 window.addEventListener('message', event => {
   const message = event.data;
-  const { data, type } = message;
+  const {data, type} = message;
 
   switch (type) {
+    case 'files-ready':
+      filesReadyHandler();
+      break;
     case 'process-started':
       processStartHandler();
       break;

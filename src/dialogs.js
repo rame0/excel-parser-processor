@@ -1,14 +1,20 @@
-import { dialog } from 'electron';
+import {dialog} from 'electron';
+import moment from "moment";
 
-export const showOpenDialog = (browserWindow, defaultPath, cb) => {
-  dialog.showOpenDialog(browserWindow, {
-    buttonLabel: "Choose",
-    defaultPath,
-    title: "Choose an output folder",
-    properties: ['openDirectory', 'createDirectory']
-  }).then(({ canceled, filePaths }) => {
-    if( !canceled && filePaths?.length) {
-      cb(defaultPath, filePaths[0], browserWindow);
+export const showOpenDialog = (browserWindow, filesPaths, cb) => {
+  let date = moment().format('DD-MM-YY');
+  dialog.showSaveDialog(browserWindow, {
+    buttonLabel: "Выбрать",
+    defaultPath: date + ".xlsx",
+    title: "Выберите файл для сохранения",
+    properties: ['createDirectory', 'showOverwriteConfirmation'],
+    filters: [
+      {name: 'Excel', extensions: ['xlsx']}
+    ]
+  }).then(({canceled, filePath}) => {
+    if (!canceled && filePath) {
+      console.log('file correct')
+      cb(filesPaths, filePath, browserWindow);
     }
   }).catch(err => {
     console.log(err);
